@@ -47,7 +47,13 @@
 
 - (void) showTimeOnStatusBar:(NSInteger) time {	
 	if ([self checkDefault:@"showTimeOnStatusEnabled"]) {
-		[statusItem setTitle:[NSString stringWithFormat:@" %.2d:%.2d",time/60, time%60]];
+		NSString *timeStr;
+		if ([self checkDefault:@"showSecondsOnStatusEnabled"]) {
+			timeStr = [NSString stringWithFormat:@" %.2lu:%.2lu", time / 60, time % 60];
+		} else {
+			timeStr = [NSString stringWithFormat:@" %.2lu", time / 60];
+		}
+		[statusItem setTitle:timeStr];
 	} else {
 		[statusItem setTitle:@""];
 	}
@@ -76,10 +82,10 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath
 					  ofObject:(id)object
                         change:(NSDictionary *)change
-                       context:(void *)context {
-    	
-	if ([keyPath isEqualToString:@"showTimeOnStatusEnabled"]) {		
-		[self showTimeOnStatusBar: _initialTime * 60];		
+                       context:(void *)context
+{
+	if ([keyPath isEqualToString:@"showTimeOnStatusEnabled"] || [keyPath isEqualToString:@"showSecondsOnStatusEnabled"]) {
+		[self showTimeOnStatusBar: _initialTime * 60];
 	} else if ([keyPath isEqualToString:@"initialTime"]) {
         NSInteger duration = [[change objectForKey:NSKeyValueChangeNewKey] intValue];
         [pomodoro setDurationMinutes:duration];
@@ -585,6 +591,7 @@
 	[self observeUserDefault:@"initialTime"];
 	
 	[self observeUserDefault:@"showTimeOnStatusEnabled"];
+	[self observeUserDefault:@"showSecondsOnStatusEnabled"];
 	
 	if ([self checkDefault:@"showSplashScreenAtStartup"]) {
 		[self help:nil];
